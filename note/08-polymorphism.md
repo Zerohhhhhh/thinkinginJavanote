@@ -30,7 +30,7 @@
 
 ### 产生正确的行为
 
-![08-Polymorphism01](D:\MyCourses\GitHubImages\08-Polymorphism01.jpg)
+![08-Polymorphism01](D:\GitHub\thinkinginJavanote\images\08-Polymorphism01.jpg)
 
 在“几何形状”这个例子中，有一个基类Shape，以及多个导出类——Circle、Square和Triangle等。
 
@@ -46,3 +46,4 @@ Shape s = new Circle();
 s.draw();	
 ```
 
+由于后期绑定（多态），因此上述语句还是正确调用Circle.draw()方法。
