@@ -27,3 +27,22 @@
 将某个方法声明为final，除了防止其他人覆盖该方法，**更重要的是可以有效地“关闭”动态绑定，或者说，告诉编译器不需要对其进行动态绑定。**
 
 编译器可以为final方法调用生成更有效的代码，但是这样对程序整体性能不会太大提高，因此不应该试图提高性能而使用final，而是出于程序设计来决定。
+
+### 产生正确的行为
+
+![08-Polymorphism01](D:\MyCourses\GitHubImages\08-Polymorphism01.jpg)
+
+在“几何形状”这个例子中，有一个基类Shape，以及多个导出类——Circle、Square和Triangle等。
+
+向上转型可以像下面这条语句：
+
+```java
+Shape s = new Circle();
+```
+
+创建一个Circle对象，并把得到的引用立即赋值给Shape。因为通过继承，Circle就是一种Shape。假如调用一个基类方法（该方法已在导出类中被覆盖）：
+
+```java
+s.draw();	
+```
+
