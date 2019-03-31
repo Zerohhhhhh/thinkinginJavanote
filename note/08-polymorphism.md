@@ -30,7 +30,7 @@
 
 ### 产生正确的行为
 
-![08-Polymorphism01](D:\GitHub\thinkinginJavanote\images\08-Polymorphism01.jpg)
+![08-Polymorphism01](https://github.com/Zerohhhhhh/thinkinginJavanote/blob/603e6033282df37cb829d0c8b9944463d32bff3a/images/08-Polymorphism01.jpg)
 
 在“几何形状”这个例子中，有一个基类Shape，以及多个导出类——Circle、Square和Triangle等。
 
