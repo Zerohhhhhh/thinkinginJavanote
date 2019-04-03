@@ -68,3 +68,29 @@ s.draw();
 
 ### 缺陷：域与静态方法
 
+多态机制并不是对所有事物都发生的，只有普通方法调用可以是多态的。即如果直接访问某个域，这个访问就将在编译期进行解析。
+
+```java
+class Super{
+    public int field = 0;
+    public int getField(){
+        return file;
+    }
+}
+
+class Sub extends Super{
+    public int field = 1;
+    public int getField(){
+        return filed;
+    }
+}
+
+/*
+	调用即结果
+	Super sup = new Sub();
+	sup.field;  // 0  (域无法发生多态，即如果发生则结果为1)
+	sup.getField(); //	1 （多态机制）
+*/
+
+```
+
