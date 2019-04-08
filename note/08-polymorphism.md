@@ -100,3 +100,56 @@ Super.field和Sub.field分配了不同的存储空间。因此，Sub实际上包
 
 ## 构造器和多态
 
+### 构造器的调用顺序
+
+调用构造器要遵照下面的顺序：
+
+1. 调用基类构造器。这个步骤会不断地反复递归下去，首先是构造这种层次结构的根，然后是下一层导出类，等等，直到最低层的导出类。
+2. 按声明顺序调用成员的初始化方法。
+3. 调用导出类构造器的主体。
+
+### 继承与清理
+
+通过组合和继承方法来创建新类时，永远不必担心对象的清理问题，子对象通常都会留给垃圾回收器进行处理**（绝大部分情况下并不需要自己手动处理垃圾回收）**。
+
+**如果确实遇到清理的问题，那么必须为新类创建dispose()方法（名称非特定，作用类似即可）。并且由于继承的缘故，如果有其他作为垃圾回收一部分的特殊清理动作，就必须在导出类中覆盖dispose()方法。当覆盖被继承类的dispose()方法时，必须调用基类版本dispose()方法；否则，基类的清理动作就不会发生。**
+
+### 构造器内部的多态方法的行为
+
+```java
+// PolyConstructors.java
+// Constructors and polymorphism
+// don't produce what you might expect
+class Glyph{
+    void draw(){
+        System.out.println("Glyph.draw()");
+    }
+    Glyph(){
+        System.out.println("Glyph() before draw()");
+        draw();
+        System.out.println("Glyph() after draw()");
+    }
+}
+class RoundGlyph extends Glyph{
+    RoundGlyph(int r){
+        radius = r;
+        System.out.println("RoundGlyph.RoundGlyph(), radius = " + radius);
+    }   
+    private int radius = 1;
+    void draw(){
+        System.out.println("RoundGlyph.draw(), radius = " + radius);
+    }
+}
+public class PolyConstructors {
+    public static void main(String[] args){
+        new RoundGlyph(5);
+    }
+}
+/**Output:
+ * Glyph() before draw()
+ * RoundGlyph.draw(), radius = 0
+ * Glyph() after draw()
+ * RoundGlyph.RoundGlyph(), radius = 5
+ */
+```
+
