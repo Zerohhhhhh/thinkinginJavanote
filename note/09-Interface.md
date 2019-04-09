@@ -79,3 +79,83 @@ interface C extends A,B{}
 2. 既然域是static的，它们就可以在类第一次被加载是初始化，这发生在任何域首次被访问时。
 3. **这些域不是接口的一部分**，它们的值被存储在该接口的静态存储区域内。
 
+## 接口和工厂
+
+**生成遵循某个接口的对象的典型方式就是工厂方法设计模式**。这与直接调用构造器不同，我们在工厂对象上调用的是创建方法，而该工厂对象将生成接口的某个实现的对象。理论上，通过这种方式，我们的代码将完全与接口的实现分离，这就使得我们可以透明地将某个实现替换为另一个实现。
+
+```java
+interface Service{
+    void method1();
+    void method2();
+}
+
+interface ServiceFactory{
+    Service getService();
+}
+
+class Implementation1 implements Service{
+    Implementation1(){ }
+
+    @Override
+    public void method1() {
+        Print.print("Implementation1 method1");
+    }
+
+    @Override
+    public void method2() {
+        Print.print("Implementation1 method2");
+    }
+}
+
+class Implementation1Factory implements ServiceFactory{
+    @Override
+    public Service getService() {
+        return new Implementation1();
+    }
+}
+
+class Implementation2 implements Service{
+    Implementation2(){ }
+
+    @Override
+    public void method1() {
+        Print.print("Implementation2 method1");
+    }
+
+    @Override
+    public void method2() {
+        Print.print("Implementation2 method2");
+    }
+}
+
+class Implementation2Factory implements ServiceFactory{
+    @Override
+    public Service getService() {
+        return new Implementation2();
+    }
+}
+
+public class Factories {
+    public static void serviceConsumer(ServiceFactory factory){
+        Service service = factory.getService();
+        service.method1();
+        service.method2();
+    }
+
+    public static void main(String[] args){
+        serviceConsumer(new Implementation1Factory());
+        serviceConsumer(new Implementation2Factory());
+    }
+}
+
+
+/** output
+ * Implementation1 method1
+ * Implementation1 method2
+ * Implementation2 method1
+ * Implementation2 method2
+ */
+```
+
+
+
