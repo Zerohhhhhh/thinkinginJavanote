@@ -209,3 +209,102 @@ public class Wrapping {
 ```
 
 在匿名内部类末尾的分号，并不是用来标记此内部类结束的。实际上，它标记的是表达式的结束，只不过这个表达式正巧包含了匿名内部类。
+
+3. **在匿名内部类中定义字段时，能够对其执行初始化操作**
+
+```java
+interface Destination{
+    String readLabel();
+}
+public class Parcel9 {
+
+    public Destination destination(final String dest){
+        return new Destination() {
+            private String label = dest;
+            @Override
+            public String readLabel() {
+                return label;
+            }
+        };
+    }
+
+    public static void main(String[] args) {
+        Parcel9 parcel9 = new Parcel9();
+        Destination destination = parcel9.destination("Tasmania");
+        Print.print(destination.readLabel());
+    }
+}
+
+```
+
+如果定义一个匿名内部类，并且希望它使用一个在其外部定义的对象，那么编译器会要求其参数引用是final的**（使用jdk8时不用final也不会出错，可能jdk8改进了，有待考证）**。
+
+4. **为匿名内部类创建一个构造器**
+
+```java
+abstract class Base{
+    public Base(int i){
+        Print.print("Base constructor,i="+ i);
+    }
+    public abstract void f();
+}
+
+public class AnonymousConstructor {
+    public static Base getBase(int i){
+        return new Base(i) {
+            {
+                Print.print("Inside instance initializer");
+            }
+            @Override
+            public void f() {
+                Print.print("in anonymous f()");
+            }
+        };
+    }
+
+    public static void main(String[] args) {
+        Base base = getBase(47);
+        base.f();
+    }
+    /**
+     * output
+     * Base constructor,i=47
+     * Inside instance initializer
+     * in anonymous f()
+     */
+}
+
+```
+
+在匿名类中不可能有命名构造器，但通过**实例初始化**，能够达到为匿名内部类创建一个构造器的效果。
+
+在此例中，不要求变量i一定是final的。因为i被传递给匿名类的基类的构造器，它并不会在匿名类内部被直接使用。
+
+```java
+public class Parcel10 {
+    public Destination destination(final String dest,final float price){
+        return new Destination() {
+            private int cost;
+            {
+                cost = Math.round(price);
+                if (cost > 100){
+                    Print.print("Over budget");
+                }
+            }
+            private String label = dest;
+            @Override
+            public String readLabel() {
+                return label;
+            }
+        };
+    }
+
+    public static void main(String[] args) {
+        Parcel10 parcel10 = new Parcel10();
+        Destination destination = parcel10.destination("Tasmania",101.2143242f);
+        Print.print(destination.readLabel());
+    }
+}
+
+```
+
