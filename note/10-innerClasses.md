@@ -94,3 +94,41 @@ public class Sequence {
 内部类如何做到自动拥有对其外围类所有成员的访问权？当某个外围类的对象创建了一个内部类对象时，此内部类对象必定会秘密捕获一个指向那个外围类对象的引用。然后，在访问此外围类的成员时，就是用那个引用来选择外围类的成员。构建内部类对象时，需要一个指向其外围类对象的引用，如果编译器访问不到这个引用就会报错。**内部类不能为static类。**
 
 ## 使用.this与.new
+
+如果你需要生成对外部类对象的引用，可以使用外部类的名字后面紧跟圆点和this。**这样产生的引用自动地具有正确地类型，这一点在编译期就被知晓并受到检查，因此没有任何运行时开销**。
+
+```java
+public class DotThis {
+    void f(){
+        Print.print("DotThis.f()");
+    }
+    public class Inner{
+        public DotThis outer(){
+            //生成对外部类对象的引用，可以使用外部类的名字后面紧跟圆点和this
+            return DotThis.this;
+        }
+    }
+    public Inner inner(){
+        return new Inner();
+    }
+    public static void main(String[] args) {
+        DotThis dotThis = new DotThis();
+        DotThis.Inner dotThisInner = dotThis.inner();
+        dotThisInner.outer().f();
+    }
+/**
+ * output
+ * DotThis.f()
+ */
+}
+```
+
+有时想要告知某些其他对象，去创建其某个内部类的对象。要实现此目的，你必须在new表达式中提供对其他外部类对象的引用，这是需要使用new语法。在以上程序的main方法中添加下面代码：
+
+```java
+DotThis.Inner dotThisInner1 = dotThis.new Inner();
+dotThisInner1.outer().f();
+```
+
+其运行结果与上述相同。
+
