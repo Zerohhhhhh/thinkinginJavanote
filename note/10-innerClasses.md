@@ -139,3 +139,73 @@ dotThisInner1.outer().f();
 
 ## 内部类与向上转型
 
+当将内部类向上转型为其基类，尤其是转型为一个接口的时候，内部类就有了用武之地。（从实现了某个接口的对象，得到对此接口的引用，与向上转型为这个对象的基类，实质上效果是一样的）。
+
+## 在方法和作用域内的内部类
+
+1. 内部类在方法内时，在该方法外无法被访问。
+2. 内部类在作用域内时，在该作用域外无法被访问。
+3. 内部类无论在哪里都会和其他类一起被编译。
+
+----
+
+## 匿名内部类
+
+1. **无参数构造器**
+
+```java
+public class Parcel7 {
+    public Contents contents(){
+        return new Contents() { //匿名内部类
+            private int i = 11;
+            @Override
+            public int value() {
+                return i;
+            }
+        };
+    }
+
+    public static void main(String[] args){
+        Parcel7 p = new Parcel7();
+        Contents contents = p.contents();
+        Print.print(contents.value());
+    }
+}
+```
+
+contents方法将返回值的生成与表示这个返回值的类的定义结合在一起。同时，这个类是匿名的。这种语法指的是：创建一个继承自Contents的匿名类的对象。通过new表达式返回的引用被自动向上转型为对Contents的引用。
+
+2. **有参数构造器**
+
+```java
+public class Parcel8 {
+    public Wrapping wrapping(int x){
+       return new Wrapping(x){
+           @Override
+           public int value() {
+               return super.value() * 47;
+           }
+       };
+    }
+    public static void main(String[] args) {
+        Parcel8 p = new Parcel8();
+        Wrapping w = p.wrapping(10);
+        Print.print(w.value());
+    }
+}
+```
+
+```java
+public class Wrapping {
+    private int i;
+
+    public Wrapping(int i) {
+        this.i = i;
+    }
+    public int value(){
+        return i;
+    }
+}
+```
+
+在匿名内部类末尾的分号，并不是用来标记此内部类结束的。实际上，它标记的是表达式的结束，只不过这个表达式正巧包含了匿名内部类。
