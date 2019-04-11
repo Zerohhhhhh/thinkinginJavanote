@@ -2,5 +2,5 @@
 
 
 
-![11-HoldingYourObjects](D:\GitHub\thinkinginJavanote\images\11-HoldingYourObjects.jpg)
+![11-HoldingYourObjects](https://github.com/Zerohhhhhh/thinkinginJavanote/blob/master/images/11-HoldingYourObjects.jpg)
 
