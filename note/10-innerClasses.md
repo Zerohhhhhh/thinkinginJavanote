@@ -606,6 +606,8 @@ public class Callbacks {
 
 `回调的价值在于它的灵活性，可以在运行时动态地决定需要调用什么方法。`
 
+---
+
 ### 内部类与控制框架P207
 
 在将要介绍的控制框架（control framework)中，可以看到更多使用内部类的具体例子。
@@ -654,3 +656,82 @@ BigEgg2.Yolk.f()
 ```
 
 BigEgg2继承Egg2，同时BigEgg2的内部类Yolk继承Egg2的内部类Yolk。接着BigEgg2.Yolk覆盖Egg2.Yolk的所有方法。在Egg2中提供`insertYolk()`方法Egg2.Yolk的对象修改为BigEgg2.Yolk的对象。至此，覆盖内部类完成。 
+
+----
+
+## 局部内部类
+
+局部内部类不能有访问说明符，因为它不是外围类的一部分；但是它可以访问当前代码块内的常量，以及此外围类的所有成员。
+
+```java
+interface Counter {
+  int next();
+}	
+
+public class LocalInnerClass {
+  private int count = 0;
+  Counter getCounter(final String name) {
+    // A local inner class:
+    class LocalCounter implements Counter {
+      public LocalCounter() {
+        // Local inner class can have a constructor
+        print("LocalCounter()");
+      }
+      public int next() {
+        printnb(name); // Access local final
+        return count++;
+      }
+    }
+    return new LocalCounter();
+  }	
+  // The same thing with an anonymous inner class:
+  Counter getCounter2(final String name) {
+    return new Counter() {
+      // Anonymous inner class cannot have a named
+      // constructor, only an instance initializer:
+      {
+        print("Counter()");
+      }
+      public int next() {
+        printnb(name); // Access local final
+        return count++;
+      }
+    };
+  }	
+  public static void main(String[] args) {
+    LocalInnerClass lic = new LocalInnerClass();
+    Counter
+      c1 = lic.getCounter("Local inner "),
+      c2 = lic.getCounter2("Anonymous inner ");
+    for(int i = 0; i < 5; i++)
+      print(c1.next());
+    for(int i = 0; i < 5; i++)
+      print(c2.next());
+  }
+} /* Output:
+LocalCounter()
+Counter()
+Local inner 0
+Local inner 1
+Local inner 2
+Local inner 3
+Local inner 4
+Anonymous inner 5
+Anonymous inner 6
+Anonymous inner 7
+Anonymous inner 8
+Anonymous inner 9
+*///:~
+```
+
+我们分别使用局部内部类和匿名内部类实现了这个功能，它们具有相同的行为和能力。既然局部内部类的名字在方法外是不可见的，那为什么我们仍然使用局部内部类而不是匿名内部类呢？**唯一的理由是，我们需要一个已命名的构造器，或者需要重载构造器，而匿名内部类只能用于实例初始化**。
+
+使用局部内部类而不使用匿名内部类的另一个理由就是，需要不止一个该内部类的对象。
+
+---
+
+## 内部类标识符
+
+1. 内部类的`.class`文件名：`OuterClassName$InnerClassName.class`。
+2. 如果内部类是匿名的，编译器会简单地产生一个数字作为其标识符。
+3. 如果内部类是嵌套在别的内部类之中，只需要直接将他们的名字加在其外围类标识符与`$`的后面。
