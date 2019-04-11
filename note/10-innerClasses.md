@@ -508,3 +508,84 @@ public class MultiImplementation {
 4. 内部类并没有令人迷惑的 "is-a" 关系 ； 它就是一个独立的实体。
 
 举个例子， 如果Sequence.java不使用内部类 ， 就必须声明 "Sequence是一个Selector", 对于某个特定的Sequence只能有一个Selector。然而使用内部类很容易就能拥有另一个方法 reverseSelector()，用它来生成一个反方向遍历序列的Selector“。只有内部类才有这种灵活性。
+
+---
+
+### 闭包与回调
+
+**闭包 (closure)** 是一个可调用的对象 ， 它记录了一些信息 ， 这些信息来自于创建它的作用域。 通过这个定义 ， 可以看出内部类是面向对象的闭包， 因为它不仅包含外围类对象 （创建内部类的作用域） 的信息 ， 还自动拥有一个指向此外围类对象的引用 ， 在此作用域内 ， 内部类有权操作所有的成员 ， 包括private成员。
+
+**回调  (callback)**，通过回调，对象能够携带一些信息，这些信息允许它在稍后的某个时刻调用初始的对象。Java中没有指针，通过内部类提供的闭包功能可以实现回调。
+
+```java
+// Callbacks.java
+// using inner classes for callbacks
+
+interface Incrementable{
+    void increment();
+}
+
+// Very simple to just implement the interface:
+class Callee1 implements Incrementable{
+    private int i = 0;
+    public void increment(){
+        System.out.println(++i);
+    }
+}
+
+class MyIncrement{
+    public void increment(){ System.out.println("Other operation"); }
+    static void f(MyIncrement mi) { mi.increment(); }
+}
+
+// If your class must implement increment() in some other way, you must use an inner class:
+class Callee2 extends MyIncrement{
+    private int i = 0;
+    public void increment(){
+        super.increment();
+        System.out.println(++i);
+    }
+    private class Closure implements Incrementable{
+        public void increment(){
+            // Specify outer-class method, otherwise you'd get an infinite recursion:
+            Callee2.this.increment();
+        }
+    }
+    Incrementable getCallbackReference(){
+        return new Closure();
+    }
+}
+
+class Caller{
+    private Incrementable callbackReference;
+    Caller(Incrementable cbh){ callbackReference = cbh; }
+    void go(){ callbackReference.increment(); }
+}
+
+public class Callbacks {
+    public static void main(String[] args){
+        Callee1 c1 = new Callee1();
+        Callee2 c2 = new Callee2();
+        MyIncrement.f(c2);
+        Caller caller1 = new Caller(c1);
+        Caller caller2 = new Caller(c2.getCallbackReference());
+        caller1.go();
+        caller1.go();
+        caller2.go();
+        caller2.go();
+    }
+}
+/**Output:
+* Other operation
+* 1
+* 1
+* 2
+* Other operation
+* 2
+* Other operation
+* 3
+**/
+```
+
+`回调的价值在于它的灵活性，可以在运行时动态地决定需要调用什么方法。`
+
