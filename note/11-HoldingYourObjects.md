@@ -1,4 +1,6 @@
 # 第11章 持有对象
 
-![d](https://blog.csdn.net/leonliu06/article/details/78638841)
+
+
+![11-HoldingYourObjects](D:\GitHub\thinkinginJavanote\images\11-HoldingYourObjects.jpg)
 
