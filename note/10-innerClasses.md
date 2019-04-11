@@ -446,4 +446,65 @@ public class TestBed {
 
 如果没有内部类提供的、可以继承多个具体的或抽象的类的能力，一些设计与编程问题就很难解决。从这个角度看，**<u>内部类使得多重继承的解决方案变得完整</u>**。接口解决了部分问题，而内部类有效地实现了“多重继承”。**也就是说，内部类允许继承多个非接口类型**（类或抽象类)。
 
-为了看到更多的细节，让我们考虑这样一种情形：即必须在一个类中以某种方式实现两个接口。由于接口的灵活性，你有两种选择：使用单一类，或者使用内部类：
+为了看到更多的细节，让我们考虑这样两种情形：
+
+1. 即必须在一个类中以某种方式实现两个接口。由于接口的灵活性，你有两种选择：使用单一类，或者使用内部类。
+
+```java
+interface A {}
+interface B {}
+
+class X implements A, B {}
+
+class Y implements A {
+  B makeB() {
+    // Anonymous inner class:
+    return new B() {};
+  }
+}
+
+public class MultiInterfaces {
+  static void takesA(A a) {}
+  static void takesB(B b) {}
+  public static void main(String[] args) {
+    X x = new X();
+    Y y = new Y();
+    takesA(x);
+    takesA(y);
+    takesB(x);
+    takesB(y.makeB());
+  }
+}
+```
+
+2. 如果拥有的是抽象的类或具体的类，而不是接口，那就只能使用内部类才能实现多重继承。
+
+```java
+class D {}
+abstract class E {}
+
+class Z extends D {
+  E makeE() { return new E() {}; }
+}
+
+public class MultiImplementation {
+  static void takesD(D d) {}
+  static void takesE(E e) {}
+  public static void main(String[] args) {
+    Z z = new Z();
+    takesD(z);
+    takesE(z.makeE());
+  }
+} 
+```
+
+---
+
+如果不需要解决 “多重继承' 的问题 ， 那么自然可以用别的方式编码 ， 而不需要使用内部类。但如果使用内部类，还可以获得其他一些特性：
+
+1. 内部类可以有多个实例 ， 每个实例都有自己的状态信息， 并且与其外围类对象的信息相互独立。
+2. 在单个外围类中 ， 可以让多个内部类以不同的方式实现向一个接口 ， 或继承同一个类。稍后就会展示一个这样的例子。
+3.  创建内部类对象的时刻并不依赖于外围类对象的创建。
+4. 内部类并没有令人迷惑的 "is-a" 关系 ； 它就是一个独立的实体。
+
+举个例子， 如果Sequence.java不使用内部类 ， 就必须声明 "Sequence是一个Selector", 对于某个特定的Sequence只能有一个Selector。然而使用内部类很容易就能拥有另一个方法 reverseSelector()，用它来生成一个反方向遍历序列的Selector“。只有内部类才有这种灵活性。
