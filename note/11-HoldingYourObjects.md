@@ -434,3 +434,41 @@ public class NonCollectionSequence extends PetSequence {
 
 ## `Foreach`与迭代器
 
+到目前为止，`foreach`语法主要用于数组，但是它也可以应用于任何Collection对象。能够与`foreach`一起工作时所有Collection对象的特征。
+
+之所以能够工作，是因为被称为`Iterable`的接口，该接口包含一个能够产生Iterator的iterator()方法，并且`Iterable`接口被`foreach`用来在序列中移动。因此任何实现`Iterable`的类，都可以将它用于`foreach`语句中：
+
+```java
+public class IterableClass implements Iterable<String> {
+  protected String[] words = ("And that is how " +
+    "we know the Earth to be banana-shaped.").split(" ");
+  public Iterator<String> iterator() {
+    return new Iterator<String>() {
+      private int index = 0;
+      public boolean hasNext() {
+        return index < words.length;
+      }
+      public String next() { return words[index++]; }
+      public void remove() { // Not implemented
+        throw new UnsupportedOperationException();
+      }
+    };
+  }	
+  public static void main(String[] args) {
+    for(String s : new IterableClass())
+      System.out.print(s + " ");
+  }
+} /* Output:
+And that is how we know the Earth to be banana-shaped.
+*///:~
+
+```
+
+在java SE5，大量的类都是`Iterable`类型，主要包括所有的Collection类（但是不包括各种Map）。
+
+`foreach`语句可以用于数组或其他任何`Iterable`，但是这并不意味着数组肯定也是一个`Iterable`，而任何自动包装也不会自动发生。尝试吧数组当作一个`Iterable`参数传递会导致失败。这说明不存在任何从数组到`Iterable`的自动转换，必须手工执行这种转换。
+
+---
+
+### 适配器方法惯用法
+
