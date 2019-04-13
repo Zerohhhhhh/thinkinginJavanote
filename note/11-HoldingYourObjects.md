@@ -313,7 +313,122 @@ W U U U T T S S S O O O O N N L I I H H F E E E D D C C C B A A
 
 ## Collection和Iterator
 
+Collection是描述所有序列容器的共性的根接口，它可能会被认为是一个“附属接口”，即因为要表示其他若干个接口的共性而出现的接口。
 
+使用接口描述的一个理由是它可以使我们能够创建更通用的代码。通过针对接口而非具体实现来编写代码，我们的代码可以应用于更多的对象类型。因此，如果我编写的方法将接受一个Collection，那么该方法就可以应用于任何实现了Collection的类——这也就使得一个新类可以选择去实现Collection接口，以便我的方法可以使用它。
+
+在java中，用迭代器而不是Collection来表示容器之间的共性。但是，这两种方法绑定到了一起，因为实现Collection就意味着需要提供iterator()方法。
+
+```java
+public class InterfaceVsIterator {
+  public static void display(Iterator<Pet> it) {
+    while(it.hasNext()) {
+      Pet p = it.next();
+      System.out.print(p.id() + ":" + p + " ");
+    }
+    System.out.println();
+  }
+  public static void display(Collection<Pet> pets) {
+    for(Pet p : pets)
+      System.out.print(p.id() + ":" + p + " ");
+    System.out.println();
+  }	
+  public static void main(String[] args) {
+    List<Pet> petList = Pets.arrayList(8);
+    Set<Pet> petSet = new HashSet<Pet>(petList);
+    Map<String,Pet> petMap =
+      new LinkedHashMap<String,Pet>();
+    String[] names = ("Ralph, Eric, Robin, Lacey, " +
+      "Britney, Sam, Spot, Fluffy").split(", ");
+    for(int i = 0; i < names.length; i++)
+      petMap.put(names[i], petList.get(i));
+    display(petList);
+    display(petSet);
+    display(petList.iterator());
+    display(petSet.iterator());
+    System.out.println(petMap);
+    System.out.println(petMap.keySet());
+    display(petMap.values());
+    display(petMap.values().iterator());
+  }	
+} /* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+4:Pug 6:Pug 3:Mutt 1:Manx 5:Cymric 7:Manx 2:Cymric 0:Rat
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+4:Pug 6:Pug 3:Mutt 1:Manx 5:Cymric 7:Manx 2:Cymric 0:Rat
+{Ralph=Rat, Eric=Manx, Robin=Cymric, Lacey=Mutt, Britney=Pug, Sam=Cymric, Spot=Pug, Fluffy=Manx}
+[Ralph, Eric, Robin, Lacey, Britney, Sam, Spot, Fluffy]
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+*///:~
+```
+
+两个版本的`display()`方法都可以使用Map或Collection的子类型来工作，而且Collection接口和Iterator都可以将`display()`方法与底层容器的特定实现解耦。
+
+在本例中，这两种方式都可以凑效。事实上，Collection要更方便一点，因为它是Iterator类型，因此，在`display(Collection)`实现中，可以使用`foreach`结构，从而使代码更加清晰。
+
+当你要实现一个不是Collection的外部类时，由于让它去实现Collection接口可能非常困难或麻烦，因此使用Iterator就会变得非常吸引人。例如，如果我们通过继承一个持有Pet对象的类来创建一个Collection的实现， 那么我们必须实现所有的Collection方法， 即使我们在`display()`方法中不必使用它们 ， 也必须如此。 尽管这可以通过继承`AbstractCollection`而很容易地实现 ， 但是你无论如何还是要被强制去实现`iterator()`和`size()`， 以便提供`AbstractCollection`没有实现 ， 但是`AbstractCollection`中的其他方法会使用到的方法：
+
+```java
+public class CollectionSequence
+extends AbstractCollection<Pet> {
+  private Pet[] pets = Pets.createArray(8);
+  public int size() { return pets.length; }
+  public Iterator<Pet> iterator() {
+    return new Iterator<Pet>() {
+      private int index = 0;
+      public boolean hasNext() {
+        return index < pets.length;
+      }
+      public Pet next() { return pets[index++]; }
+      public void remove() { // Not implemented
+        throw new UnsupportedOperationException();
+      }
+    };
+  }	
+  public static void main(String[] args) {
+    CollectionSequence c = new CollectionSequence();
+    InterfaceVsIterator.display(c);
+    InterfaceVsIterator.display(c.iterator());
+  }
+} /* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+*///:~
+
+```
+
+从本例中，你可以看到，如果你实现Collection，就必须实现`iterator()`，并且只能拿实现`iterator()`与继承`AbstractCollection`相比，花费的代价只有略微减少。但是，如果你的类已经继承了其他的类，那么你就不能再继承`AbstractCollection`了。在这种情况下，要实现Collection，就必须实现该接口中的所有方法。此时，继承并提供创建迭代器的能力就会显得容易得多了：
+
+```java
+class PetSequence {
+  protected Pet[] pets = Pets.createArray(8);
+}
+
+public class NonCollectionSequence extends PetSequence {
+  public Iterator<Pet> iterator() {
+    return new Iterator<Pet>() {
+      private int index = 0;
+      public boolean hasNext() {
+        return index < pets.length;
+      }
+      public Pet next() { return pets[index++]; }
+      public void remove() { // Not implemented
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+  public static void main(String[] args) {
+    NonCollectionSequence nc = new NonCollectionSequence();
+    InterfaceVsIterator.display(nc.iterator());
+  }
+} /* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+*///:~
+
+```
+
+生成Iterator是将队列与消费队列的方法连接在一起耦合度最小的方式，并且与实现Collection相比，它在序列类上所施加的约束也少得多。
 
 ---
 
