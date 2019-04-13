@@ -245,12 +245,76 @@ public class Statistics {
 *///:~
 ```
 
-
-
 ---
 
 ## Queue
 
+队列是一个典型的先进先出（FIFO）容器。即从容器的一端放入事物，从另一端取出，并且事物放入容器的顺序与取出的顺序是相同的。队列常被当做一张可靠的将对象从程序的某个区域传输到另一个区域的途径。队列在并发编程中特别重要。
+
+`offer()`方法是与Queue相关的方法之一，它在允许的情况下，将一个元素插人到队尾，或者返回false。`peek()`和`element()`都将在不移除的情况下返回队头，但是peek()方法在队列为空时返回null，而`element()`会抛出`NoSuchElementException`异常。`poll()`和`remove()`方法将移除并返回队头，但是`poll()`在队列为空时返回null，而`remove()`会抛出`NoSuchElementException`异常。
+
+Queue接口窄化了对`LinkedList`的方法的访问权限，以使得只有恰当的方法才可以使用。因此，你能够访问的`LinkedList`的方法会变少（这里你实际上可以将queue转型回，但是至少我们不鼓励这么做）。
+
+注意，与Queue相关的方法提供了完整而独立的功能。即，对于Queue所继承的Collection,在不需要使用它的任何方法的情况下，就可以拥有一个可用的Queue。
+
+---
+
+### `PriorityQueue`
+
+先进先出声明的是下一个元素应该是等待时间最长的元素。
+
+优先级队列声明下一个弹出元素是最需要的元素。
+
+```java
+public class PriorityQueueDemo {
+  public static void main(String[] args) {
+    PriorityQueue<Integer> priorityQueue = new PriorityQueue<Integer>();
+    Random rand = new Random(47);
+    for(int i = 0; i < 10; i++)
+      priorityQueue.offer(rand.nextInt(i + 10));
+    QueueDemo.printQ(priorityQueue);
+
+    List<Integer> ints = Arrays.asList(25, 22, 20,
+      18, 14, 9, 3, 1, 1, 2, 3, 9, 14, 18, 21, 23, 25);
+    priorityQueue = new PriorityQueue<Integer>(ints);
+    QueueDemo.printQ(priorityQueue);
+    priorityQueue = new PriorityQueue<Integer>(
+        ints.size(), Collections.reverseOrder());
+    priorityQueue.addAll(ints);
+    QueueDemo.printQ(priorityQueue);
+
+    String fact = "EDUCATION SHOULD ESCHEW OBFUSCATION";
+    List<String> strings = Arrays.asList(fact.split(""));
+    PriorityQueue<String> stringPQ = new PriorityQueue<String>(strings);
+    QueueDemo.printQ(stringPQ);
+    stringPQ = new PriorityQueue<String>(strings.size(), Collections.reverseOrder());
+    stringPQ.addAll(strings);
+    QueueDemo.printQ(stringPQ);
+
+    Set<Character> charSet = new HashSet<Character>();
+    for(char c : fact.toCharArray())
+      charSet.add(c); // Autoboxing
+    PriorityQueue<Character> characterPQ = new PriorityQueue<Character>(charSet);
+    QueueDemo.printQ(characterPQ);
+  }
+} /* Output:
+0 1 1 1 1 1 3 5 8 14
+1 1 2 3 3 9 9 14 14 18 18 20 21 22 23 25 25
+25 25 23 22 21 20 18 18 14 14 9 9 3 3 2 1 1
+       A A B C C C D D E E E F H H I I L N N O O O O S S S T T U U U W
+W U U U T T S S S O O O O N N L I I H H F E E E D D C C C B A A
+  A B C D E F H I L N O S T U W
+*///:~
+```
+
+
+
+---
+
 ## Collection和Iterator
+
+
+
+---
 
 ## Foreach与迭代器
