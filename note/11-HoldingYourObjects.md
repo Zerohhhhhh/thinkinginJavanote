@@ -11,12 +11,16 @@ java容器类类库的用途是“保存对象”，并将其划分为两个不�
    - 一组成对的“键值对”对象，允许你使用键来查找值。`ArrayList`允许你使用数字来查找值，因此在某种意义上讲，它将数字与对象关联在一起。映射表允许我们使用另一个对象来查找某个对象，它也被称为“关联数组”，或者被称为“字典”。
    - Map在每个槽内保存了两个对象，即键和与之相关联的值。
 
+---
+
 ## List
 
 `ArrayList`和`LinkedList`都是List类型。从输出可以看出，它们都按照被插入的顺序保存元素。
 
 - `ArrayList`，擅长于随机访问元素，但是在List的中间插入和移除元素较慢。
 - `LinkedList`，通过代价较低的List中间进行的插入和删除操作，提供了优化的顺序访问。`LinkedList`在随机访问方面相对比较慢。
+
+---
 
 ## 迭代器
 
@@ -91,7 +95,9 @@ public class CrossContainerIteration {
 
 `display()`方法不包含任何有关它所遍历的序列的类型信息，而这也展示了Iterator的真正威力：**能够将遍历序列的操作与序列底层的结构分离**。迭代器统一了对容器的访问方式。
 
-### ListIterator
+---
+
+### `ListIterator`
 
 `ListIterator`是一个更加强大的Iterator的子类型，它只能用于各种List类的访问。Iterator只能向前访问，但是`ListIterator`可以双向移动。它还可以产生相对于迭代器在列表中指向的当前位置的前一个和后一个元素的索引，并且可以使用`set()`方法替换它访问过的最后一个元素。你可以通过调用`listlterator()`方法产生一个指向List开始处的`Listlterator`，并且还可以通过调用`listlterator(n)`方法创建一个一开始就指向列表索引为n的元素处的`Listlterator`。下面的示例演示了所有这些能力：
 
@@ -124,11 +130,21 @@ Rat, 1, 0; Manx, 2, 1; Cymric, 3, 2; Mutt, 4, 3; Pug, 5, 4; Cymric, 6, 5; Pug, 7
 *///:~
 ```
 
+---
 
+## `LinkedList`
 
-## LinkedList
+`LinkedList`也像`ArrayList`一样实现了基本的List接口，但是它执行某些操作（在List的中间插入和移除）时比`ArrayList`更高效，但在随机访问操作方面却要逊色一些。
+
+`LinkedList`还添加了可以使其用作栈、队列和双向队列的方法。
+
+---
 
 ## Stack
+
+
+
+---
 
 ## Set
 
