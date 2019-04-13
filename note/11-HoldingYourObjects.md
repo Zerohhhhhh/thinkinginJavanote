@@ -216,13 +216,38 @@ set2 removed from set1: [D, C, B, G, M, A, F, E]
 *///:~
 ```
 
-
+当`TreeSet`对字母进行排序时，默认排序是按`字典序`进行的，因此大写或小写字母被划分到了不同组中。如果想要按照`字母序`排序，那么可以向`TreeSet`的构造器传入`String.CASE_INSENTIVE_ORDER`比较器（比较器就是建立排序顺序的对象）。
 
 ---
 
 ## Map
 
 `HashMap`、`TreeMap`和`LinkedHashMap`。`HashMap`提供最快的查找技术，没有任何明显的顺序来保存元素。`TreeMap`按照比较结果的升序保存键，而`LinkedHashMap`则按照插入顺序保存键，同时还保留了`HashMap`的查询速度。
+
+将对象映射到其他对象的能力是一种解决编程问题的杀手锏。例如，考虑一个程序，它将用来检查java的Random类的随机性。
+
+```java
+public class Statistics {
+  public static void main(String[] args) {
+    Random rand = new Random(47);
+    Map<Integer,Integer> m =
+      new HashMap<Integer,Integer>();
+    for(int i = 0; i < 10000; i++) {
+      // Produce a number between 0 and 20:
+      int r = rand.nextInt(20);
+      Integer freq = m.get(r);
+      m.put(r, freq == null ? 1 : freq + 1);
+    }
+    System.out.println(m);
+  }
+} /* Output:
+{15=497, 4=481, 19=464, 8=468, 11=531, 16=533, 18=478, 3=508, 7=471, 12=521, 17=509, 2=489, 13=506, 9=549, 6=519, 1=502, 14=477, 10=513, 5=503, 0=481}
+*///:~
+```
+
+
+
+---
 
 ## Queue
 
