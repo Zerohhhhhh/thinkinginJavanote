@@ -142,6 +142,22 @@ Rat, 1, 0; Manx, 2, 1; Cymric, 3, 2; Mutt, 4, 3; Pug, 5, 4; Cymric, 6, 5; Pug, 7
 
 ## Stack
 
+“栈”通常是指“后进先出”（LIFO）的容器。最后“压入”栈的元素，第一个“弹出”栈。
+
+```java
+public class StackTest {
+  public static void main(String[] args) {
+    Stack<String> stack = new Stack<String>();
+    for(String s : "My dog has fleas".split(" "))
+      stack.push(s);
+    while(!stack.empty())
+      System.out.print(stack.pop() + " ");
+  }
+} /* Output:
+fleas has dog My
+*///:~
+```
+
 
 
 ---
@@ -149,6 +165,60 @@ Rat, 1, 0; Manx, 2, 1; Cymric, 3, 2; Mutt, 4, 3; Pug, 5, 4; Cymric, 6, 5; Pug, 7
 ## Set
 
 `HashSet`、`TreeSet`和`LinkedHashSet`都是Set类型。`HashSet`的存储顺序无实际意义，但获取元素方式的速度最快。`TreeSet`按照比较结果的升序保存对象；`LinkedHashSet`按照被添加的顺序保存对象。
+
+Set中最常被使用的是测试归属性，可以很容易地询问某个对象是否在某个Set中的。
+
+```java
+public class SetOfInteger {
+    public static void main(String[] args) {
+        Random random = new Random(47);
+        Set<Integer> integerSet = new HashSet<>();
+        for (int i = 0;i < 10000;i++){
+            integerSet.add(random.nextInt(30));
+        }
+        System.out.print(integerSet);
+    }
+}
+```
+
+`HashSet`所维护的顺序与`TreeSet`或`LinkedHashSet`都不同，因为它们的实现具有不同的元素存储方式。`TreeSet`将元素存储在红-黑树数据结构中，而`HashSet`使用的是散列函数。`LinkedHashList`因为查询速度的原因也使用了散列，但是看起来它使用了链表来维护元素的插入顺序。
+
+关于Set容器最常见的操作之一，就是使用`contains()`测试Set的归属性。
+
+```java
+public class SetOperations {
+  public static void main(String[] args) {
+    Set<String> set1 = new HashSet<String>();
+    Collections.addAll(set1,
+      "A B C D E F G H I J K L".split(" "));
+    set1.add("M");
+    print("H: " + set1.contains("H"));
+    print("N: " + set1.contains("N"));
+    Set<String> set2 = new HashSet<String>();
+    Collections.addAll(set2, "H I J K L".split(" "));
+    print("set2 in set1: " + set1.containsAll(set2));
+    set1.remove("H");
+    print("set1: " + set1);
+    print("set2 in set1: " + set1.containsAll(set2));
+    set1.removeAll(set2);
+    print("set2 removed from set1: " + set1);
+    Collections.addAll(set1, "X Y Z".split(" "));
+    print("'X Y Z' added to set1: " + set1);
+  }
+} /* Output:
+H: true
+N: false
+set2 in set1: true
+set1: [D, K, C, B, L, G, I, M, A, F, J, E]
+set2 in set1: false
+set2 removed from set1: [D, C, B, G, M, A, F, E]
+'X Y Z' added to set1: [Z, D, C, B, G, M, A, F, Y, X, E]
+*///:~
+```
+
+
+
+---
 
 ## Map
 
