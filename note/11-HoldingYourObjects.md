@@ -472,3 +472,59 @@ And that is how we know the Earth to be banana-shaped.
 
 ### 适配器方法惯用法
 
+如果现有一个Iterable类，你想要添加一种或多种在foreach语句中使用这个类的方法，应该怎么做呢？例如，假设你希望可以选择以向前的方向或是向后的方向迭代一个单词列表。如果直接继承这个类，并覆盖iterator()方法，你只能替换现有的方法，而不能实现选择。
+
+一种解决方案是所谓适配器方法的惯用法，提供特定接口以满足`foreach`语句。当你有一个接口并需要另一个接口时，编写适配器就可以解决问题。这里，我希望在默认的前向迭代器的基础上，添加产生反向迭代器的能力，因此我不能使用覆盖，而是添加了一个能够产生`Iterable`对象的方法，该对象可以用于`foreach`语句。正如你所见，这使得我们可以提供多种使用`foreach`的方式：
+
+```java
+class ReversibleArrayList<T> extends ArrayList<T> {
+  public ReversibleArrayList(Collection<T> c) { super(c); }
+  public Iterable<T> reversed() {
+    return new Iterable<T>() {
+      public Iterator<T> iterator() {
+        return new Iterator<T>() {
+          int current = size() - 1;
+          public boolean hasNext() { return current > -1; }
+          public T next() { return get(current--); }
+          public void remove() { // Not implemented
+            throw new UnsupportedOperationException();
+          }
+        };
+      }
+    };
+  }
+}	
+
+public class AdapterMethodIdiom {
+  public static void main(String[] args) {
+    ReversibleArrayList<String> ral =
+      new ReversibleArrayList<String>(
+        Arrays.asList("To be or not to be".split(" ")));
+    // Grabs the ordinary iterator via iterator():
+    for(String s : ral)
+      System.out.print(s + " ");
+    System.out.println();
+    // Hand it the Iterable of your choice
+    for(String s : ral.reversed())
+      System.out.print(s + " ");
+  }
+} /* Output:
+To be or not to be
+be to not or be To
+*///:~
+```
+
+## 总结
+
+Java提供了大量持有对象的方式：
+
+1. 数组将数字与对象联系起来。它保存类型明确的对象，查询对象时，不需要对结果做类型转换。它可以是多维的，可以保存基本类型的数据。但是，数组一旦生成，其容量就不能改变。
+2. Collection保存单一的元素，而Map保存相关联的键值对。有了Java的泛型，你就可以指定容器中存放的对象类型，因此你就不会将错误类型的对象放置到容器中，并且在从容器中获取元素时，不必进行类型转换。各种Collection和各种Map都可以在你向其中添加更多的元素时，自动调整其尺寸。容器不能持有基本类型，但是自动包装机制会仔细地执行基本类型到容器中所持有的包装器类型之间的双向转换。
+3. 像数组一样，List也建立数字索引与对象的关联，因此，数组和List都是排好序的容器。List能够自动扩充容量。
+4. 如果要进行大量的随机访问，就使用`ArrayList`,如果要经常从表中间插人或删除元素，则应该使用`LinkedList`。
+5. 各种Queue以及栈的行为，由`LinkedList`提供支持。
+6. Map是一种将对象（而非数字）与对象相关联的设计。`HashMap`设计用来快速访问，而`TreeMap`保持“键”始终处于排序状态，所以没有`HashMap`快。`LinkedHashMap`保持元素插人的顺序，但是也通过散列提供了快速访问能力。
+7. Set不接受重复元素。`HashSet`提供最快的查询速度，而`TreeSet`保持元素处于排序状态。`LinkedHashSet`以插人顺序保存元素。
+8. 新程序中不应该使用过时的`Vectot`、`Hashtable`和Stack。
+
+浏览一下Java容器的简图（不包含抽象类和遗留构件）会大有裨益。这里只包含你在一般情况下回碰到的接口和类。
