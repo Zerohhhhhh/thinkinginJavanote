@@ -528,3 +528,6 @@ Java提供了大量持有对象的方式：
 8. 新程序中不应该使用过时的`Vectot`、`Hashtable`和Stack。
 
 浏览一下Java容器的简图（不包含抽象类和遗留构件）会大有裨益。这里只包含你在一般情况下回碰到的接口和类。
+
+![11-HoldingYourObjects](https://github.com/Zerohhhhhh/thinkinginJavanote/blob/master/images/11-HoldingYourObjects.jpg)
+
