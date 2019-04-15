@@ -531,3 +531,7 @@ Java提供了大量持有对象的方式：
 
 ![11-HoldingYourObjects](https://github.com/Zerohhhhhh/thinkinginJavanote/blob/master/images/11-HoldingYourObjects.jpg)
 
+你可以看到， 其实只有四种容器 ： Map、 List、 Set和Queue, 它们各有两到三个实现版本 (Queue的java.util.concurrent实现没有包括在上面这张图中）。 常用的容器用黑色粗线框表示。
+
+点线框表示接口 ， 实线框表示普通的 （具体的） 类。 带有空心箭头的点线表示一个特定的类实现了一个接口 ， 实心箭头表示某个类可以生成箭头所指向类的对象 。 例如 ， 任意的 Collection可以生成Iterator, 而List可以生成`Listlterator` （也能生成普通的Iterator, 因为List继承自Collection)。
+
