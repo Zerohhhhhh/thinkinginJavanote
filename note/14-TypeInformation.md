@@ -293,8 +293,45 @@ public class FilledList<T> {
 *///:~
 ```
 
-总结，使用泛型类后
+### 总结，使用泛型类后
 
 - 使得编译期进行类型检查，因此如果你操作有误，稍后立即就会发现这一点。
 - `.newInstance()`将返回确切类型的对象，而不是`Object`对象
 
+### 注意
+
+```java
+public class GenericToyTest {
+  public static void main(String[] args) throws Exception {
+    Class<FancyToy> ftClass = FancyToy.class;
+    // Produces exact type:
+    FancyToy fancyToy = ftClass.newInstance();
+    Class<? super FancyToy> up = ftClass.getSuperclass();
+    // This won't compile:
+    // Class<Toy> up2 = ftClass.getSuperclass();
+    // Only produces Object:
+    Object obj = up.newInstance();
+  }
+}
+```
+
+`getSuperclass()`返回的是基类，因此是表达式`Class<? super FancyToy> up`接受`ftClass.getSuperclass()`，而不是`Class<Toy>`接受这样的声明。
+
+### 较少使用的转型语法
+
+`cast()`和`asSubclass()`方法。
+
+---
+
+## 类型转换前先做检查
+
+RTTI形式包括：
+
+1. 传统类型转换，如(Shape)
+2. 代表对象的类型的Class对象.
+3. 第三种形式，就是关键字 `instanceof`。它返回一个布尔值，告诉我们对象是不是某个特定类型或其子类。如`if(x instanceof Dog)`语句会检查对象x是否从属于Dog类。
+4. 还一种形式是动态的`instanceof：Class.isInstance()`方法提供了一种动态地测试对象的途径。`Class.isInstance()`方法使我们不再需要`instanceof`表达式。
+
+### `Class.isAssignableFrom()`
+
+**`Class.isAssignableFrom()`** ：调用类型可以被参数类型赋值，即判断传递进来的参数是否属于调用类型继承结构（是调用类型或调用类型的子类）。
