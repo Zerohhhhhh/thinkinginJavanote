@@ -335,3 +335,8 @@ RTTI形式包括：
 ### `Class.isAssignableFrom()`
 
 **`Class.isAssignableFrom()`** ：调用类型可以被参数类型赋值，即判断传递进来的参数是否属于调用类型继承结构（是调用类型或调用类型的子类）。
+
+----
+
+## 注册工厂
+
