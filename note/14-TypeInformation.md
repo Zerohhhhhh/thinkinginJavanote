@@ -169,4 +169,95 @@ Class包含很多有用的方法，下面是其中的一部分：
 2. **链接**。在链接阶段将验证类中的字节码，为静态域分配存储空间，并且如果必需的话，将解析这个类创建的对其他类的所有引用。
 3. **初始化**。如果该类具有超类，则对其初始化，执行静态初始化器和静态初始块。
 
-初始化被延迟到了对静态方法（构造器隐式地是静态的）或者非常数静态域进行初次引用时才执行。
+初始化被延迟到了对静态方法（构造器隐式地是静态的）或者非常数静态域进行初次引用时才执行。即初始化有效地实现了尽可能 的“**惰性**”。 
+
+```java
+package net.mrliuli.rtti;
+
+import java.util.Random;
+
+class Initable{
+    static final int staticFinal = 47;      // 常数静态域
+    static final int staticFinal2 = ClassInitialization.rand.nextInt(1000);     // 非常数静态域（不是编译期常量）
+    static{
+        System.out.println("Initializing Initable");
+    }
+}
+
+class Initable2{
+    static int staticNonFinal = 147;    // 非常数静态域
+    static {
+        System.out.println("Initializing Initable2");
+    }
+}
+
+class Initable3{
+    static int staticNonFinal = 74;     // 非常数静态域
+    static {
+        System.out.println("Initializing Initable3");
+    }
+}
+
+public class ClassInitialization {
+
+    public static Random rand = new Random(47);
+    public static void main(String[] args) throws Exception {
+        Class initalbe = Initable.class;                // 使用类字面常量.class获取Class对象引用，不会初始化
+        System.out.println("After creating Initable ref");
+        System.out.println(Initable.staticFinal);       // 常数静态域首次引用，不会初始化
+        System.out.println(Initable.staticFinal2);      // 非常数静态域首次引用，会初始化
+        System.out.println(Initable2.staticNonFinal);   // 非常数静态域首次引用，会初始化
+        Class initable3 = Class.forName("net.mrliuli.rtti.Initable3");      // 使用Class.forName()获取Class对象引用，会初始化
+        System.out.println("After creating Initable3 ref");
+        System.out.println(Initable3.staticNonFinal);   // 已初始化过
+    }
+
+}
+ /* Output:
+After creating Initable ref
+47
+Initializing Initable
+258
+Initializing Initable2
+147
+Initializing Initable3
+After creating Initable3 ref
+74
+*///:~
+```
+
+---
+
+## 泛化的Class引用
+
+**Class**引用总是指向某个**Class**对象，此时，这个**Class**对象可以是**各种类型**的，当使用**泛型语法**对Class引用所指向的Class对象的类型进行**限定**时，这就使得Class对象的类型变得**具体**，这样编译器**编译时**也会做一些额外的**类型检查**工作。
+
+```java
+public class GenericClassReferences {
+    public static void main(String[] args){
+        Class intClass = int.class;
+        Class<Integer> genericIntClass = int.class;
+        genericIntClass = Integer.class;    // Same thing
+        intClass = double.class;
+        // genericIntClass = double.class;  // Illegal, genericIntClass 限制为Integer 的Class对象
+    }
+}
+```
+
+---
+
+### 使用通配符`?`放松一些限制
+
+将通配符与extends关键字相结合如`Class<? extends Number>`，就创建了一个范围，使得这个Class引用被限定为Number类型或其子类型。
+
+```java
+public class BoundedClassReferences {
+    public static void main(String[] args){
+        Class<? extends Number> bounded = int.class;
+        bounded = double.class;
+        bounded = Number.class;
+        // Or anything derived from Number
+    }
+}
+```
+
