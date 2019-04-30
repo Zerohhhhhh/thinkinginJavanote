@@ -697,3 +697,37 @@ Robot model: SnowRemovalRobot NullRobot
 - 通过使用反射，仍旧可以到达并调用所有方法，甚至是private方法。因此，任何人都可以获取你最私有的方法的名字和签名，然后调用它们。
 - 即使将接口实现为一个私有内部类或匿名类，通过使用反射，依旧可以到达并调用所有方法。因此，没有任何方式可以阻止反射到达并调用那些非公共访问权限的方法。对于域来说，的确如此，即便是private域。
 - final域实际上在遭遇使用反射修改时是安全的。运行时系统会在不抛异常的情况下接受任何修改尝试，但是实际上不会发生任何修改。
+
+```java
+public class ModifyingPrivateFields {
+  public static void main(String[] args) throws Exception {
+    WithPrivateFinalField pf = new WithPrivateFinalField();
+    System.out.println(pf);
+    Field f = pf.getClass().getDeclaredField("i");
+    f.setAccessible(true);
+    System.out.println("f.getInt(pf): " + f.getInt(pf));
+    f.setInt(pf, 47);
+    System.out.println(pf);
+    f = pf.getClass().getDeclaredField("s");
+    f.setAccessible(true);
+    System.out.println("f.get(pf): " + f.get(pf));
+    f.set(pf, "No, you're not!");
+    System.out.println(pf);
+    f = pf.getClass().getDeclaredField("s2");
+    f.setAccessible(true);
+    System.out.println("f.get(pf): " + f.get(pf));
+    f.set(pf, "No, you're not!");
+    System.out.println(pf);
+  }
+} /* Output:
+i = 1, I'm totally safe, Am I safe?
+f.getInt(pf): 1
+i = 47, I'm totally safe, Am I safe?
+f.get(pf): I'm totally safe
+i = 47, I'm totally safe, Am I safe?
+f.get(pf): Am I safe?
+i = 47, I'm totally safe, No, you're not!
+*///:~
+
+```
+
