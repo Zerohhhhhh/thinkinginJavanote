@@ -340,3 +340,216 @@ RTTI形式包括：
 
 ## 注册工厂
 
+## `instanceof` 与 Class 的等价性
+
+- `instanceof` 和 `isInstance()` 保持了类型的概念，它指的是“**你是这个**类吗，或者你是这个类的派生类吗？”
+- 使用`==` 和 `equals()` 比较实际的Class对象，没有考虑继承——它要么是这个**确切的类型**，要么不是。
+
+---
+
+## 反射：运行时的类信息（Reflection: runtime class information）
+
+### 工作原理
+
+Class类与`java.lang.reflect`类库一起对反射的概念进行了支持，该类库包含了Field、Method以Constructor类 （每个类都实现了Member接口 ) O。这些类型的对象是由JVM在运行时创建的 ， 用以表示未知类里对应的成员。 这样你就可以使用Constructor创建新的对象， 用 `get()`和`set()`方法读取和修改与Field对象关联的字段 ， 用`invoke()`方法调用与Method对象关联的方法。 另外，还可以调用`getField()`、`getMethods()`和`getConstructors()`等很便利的方法，以返回表示字段、 方法以及构造器的对象的数组 （在JDK文档中 ， 通过查找Class类可了解更多相关资料）。这样， 匿名对象的类信息就能在运行时被完全确定下来 ， 而在编译时不需要知道任何事情。
+
+### RTTI与反射的真正区别在于：
+
+- 对于RTTI来说，是**编译时**打开和检查.class文件。（换句话说，我们可以用“普通”方式调用对象的所有方法。）
+- 对于反射机制来说，.class文件在编译时是不可获取的，所以是在**运行时**打开和检查.class文件。
+
+### 类方法提取器
+
+类方法提取器能够动态地提取某个类的信息。
+
+```java
+public class ShowMethods {
+  private static String usage =
+    "usage:\n" +
+    "ShowMethods qualified.class.name\n" +
+    "To show all methods in class or:\n" +
+    "ShowMethods qualified.class.name word\n" +
+    "To search for methods involving 'word'";
+  private static Pattern p = Pattern.compile("\\w+\\.");
+  public static void main(String[] args) {
+    if(args.length < 1) {
+      print(usage);
+      System.exit(0);
+    }
+    int lines = 0;
+    try {
+      Class<?> c = Class.forName(args[0]);
+      Method[] methods = c.getMethods();
+      Constructor[] ctors = c.getConstructors();
+      if(args.length == 1) {
+        for(Method method : methods)
+          print(
+            p.matcher(method.toString()).replaceAll(""));
+        for(Constructor ctor : ctors)
+          print(p.matcher(ctor.toString()).replaceAll(""));
+        lines = methods.length + ctors.length;
+      } else {
+        for(Method method : methods)
+          if(method.toString().indexOf(args[1]) != -1) {
+            print(
+              p.matcher(method.toString()).replaceAll(""));
+            lines++;
+          }
+        for(Constructor ctor : ctors)
+          if(ctor.toString().indexOf(args[1]) != -1) {
+            print(p.matcher(
+              ctor.toString()).replaceAll(""));
+            lines++;
+          }
+      }
+    } catch(ClassNotFoundException e) {
+      print("No such class: " + e);
+    }
+  }
+} /* Output:
+public static void main(String[])
+public native int hashCode()
+public final native Class getClass()
+public final void wait(long,int) throws InterruptedException
+public final void wait() throws InterruptedException
+public final native void wait(long) throws InterruptedException
+public boolean equals(Object)
+public String toString()
+public final native void notify()
+public final native void notifyAll()
+public ShowMethods()
+*///:~
+```
+
+#### 要点
+
+- Class的`getMethod()`和`getConstructors()`方法分别返回Method对象的数组和Constructor对象的数组。
+- `Class.forName()`生产的结果在编译时是不可知的，因此所有的方法特征签名信息都是在执行时被提取出来的。
+- 如果将`showMethods`作为一个非public的类（也就是拥有包访问权限），输出中就不会在显示出这个自动合成的默认构造器了。该自动合成的默认构造器会自动被赋予与类一样的访问权限。
+
+---
+
+## 动态代理
+
+### 静态代理
+
+代理是基本的设计模式之一，它为了能够提供额外的或不同的操作，而插入的用来代替“实际”对象的对象。这些操作通常涉及与“实际”对象的通信，因此代理通常充当着中间人的角色。
+
+```java
+interface Interface {
+  void doSomething();
+  void somethingElse(String arg);
+}
+
+class RealObject implements Interface {
+  public void doSomething() { print("doSomething"); }
+  public void somethingElse(String arg) {
+    print("somethingElse " + arg);
+  }
+}	
+
+class SimpleProxy implements Interface {
+  private Interface proxied;
+  public SimpleProxy(Interface proxied) {
+    this.proxied = proxied;
+  }
+  public void doSomething() {
+    print("SimpleProxy doSomething");
+    proxied.doSomething();
+  }
+  public void somethingElse(String arg) {
+    print("SimpleProxy somethingElse " + arg);
+    proxied.somethingElse(arg);
+  }
+}	
+
+class SimpleProxyDemo {
+  public static void consumer(Interface iface) {
+    iface.doSomething();
+    iface.somethingElse("bonobo");
+  }
+  public static void main(String[] args) {
+    consumer(new RealObject());
+    consumer(new SimpleProxy(new RealObject()));
+  }
+} /* Output:
+doSomething
+somethingElse bonobo
+SimpleProxy doSomething
+doSomething
+SimpleProxy somethingElse bonobo
+somethingElse bonobo
+*///:~
+```
+
+因为`consumer()`接受的Interface,所以它无法知道正在获得的到底是`RealObject`还是`SimpleProxy`，因为这二者都实现了Interface。但是`Simpleproxye`经被插人到了客户端和`RealObject`之间，因此它会执行操作，然后调用`RealObject`上相同的方法。
+
+### 动态代理
+
+Java的动态代理比代理的思想更向前迈进了一步，因为它可以动态地创建代理并动态地处理对所代理方法的调用。在动态代理上所做的所有调用都会被重定向到单一的调用处理器上，它的工作是揭示调用的类型并确定相应的对策。下面是用动态代理重写的Demo：
+
+```java
+class DynamicProxyHandler implements InvocationHandler {
+  private Object proxied;
+  public DynamicProxyHandler(Object proxied) {
+    this.proxied = proxied;
+  }
+  public Object
+  invoke(Object proxy, Method method, Object[] args)
+  throws Throwable {
+    System.out.println("**** proxy: " + proxy.getClass() +
+      ", method: " + method + ", args: " + args);
+    if(args != null)
+      for(Object arg : args)
+        System.out.println("  " + arg);
+    return method.invoke(proxied, args);
+  }
+}	
+
+class SimpleDynamicProxy {
+  public static void consumer(Interface iface) {
+    iface.doSomething();
+    iface.somethingElse("bonobo");
+  }
+  public static void main(String[] args) {
+    RealObject real = new RealObject();
+    consumer(real);
+    // Insert a proxy and call again:
+    Interface proxy = (Interface)Proxy.newProxyInstance(
+      Interface.class.getClassLoader(),
+      new Class[]{ Interface.class },
+      new DynamicProxyHandler(real));
+    consumer(proxy);
+  }
+} /* Output: (95% match)	
+doSomething
+somethingElse bonobo
+**** proxy: class $Proxy0, method: public abstract void Interface.doSomething(), args: null
+doSomething
+**** proxy: class $Proxy0, method: public abstract void Interface.somethingElse(java.lang.String), args: [Ljava.lang.Object;@42e816
+  bonobo
+somethingElse bonobo
+*///:~
+```
+
+#### 工作原理
+
+通过调用静态方法`Proxy.newProxyInstance()`可以创建动态代理，这个方法需要得到一个类加载器（你通常可以从已经被加载的对象中获取其类加载器，然后传递给它),一个你希望该代理实现的接口列表（不是类或抽象类），以及`InvocationHandler`接口的一个实现。动态代理可以将所有调用重定向到调用处理器，因此通常会向调用处理器的构造器传递给一个“实际”对象的引用，从而使得调用处理器在执行其中介任务时，可以将请求转发。
+
+`invoke()`方法中传递进来了代理对象，以防你需要区分请求的来源，但是在许多情况下，你并不关心这一点。然而，在`invoke()`内部，在代理上调用方法时需要格外当心，因为对接口的调用将被重定向为对代理的调用。  
+
+#### 常用方式
+
+通常，你会执行被代理的操作，然后使用`Method.invoke()`将请求转发给被代理对象，并传人必需的参数。这初看起来可能有些受限，就像你只能执行泛化操作一样。但是，你可以通过传递其他的参数，来过滤某些方法调用。
+
+### 动态代理的优点及美中不足
+
+- 优点：动态代理与静态代理相较，最大的好处是接口中声明的所有方法都被转移到调用处理器一个集中的方法（`InvocationHandler.invoke`）中处理。这样，在接口方法数量比较多的时候，我们可以进行灵活处理，而不需要像静态代理那样每一个方法进行中转。
+
+- 美中不足：它始终无法摆脱仅支持interface代理的桎梏，因为它的设计注定了这个遗憾。
+
+---
+
+## 空对象
+
+##  
