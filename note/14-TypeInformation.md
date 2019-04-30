@@ -552,4 +552,148 @@ somethingElse bonobo
 
 ## 空对象
 
-##  
+为了减少使用内置的null表示缺少的对象时，有时引入空对象的思想将会很有用，它可以接受传递给它的所代表的对象的消息，但是将返回表示为实际上并不存在任何“真实”对象的值。
+
+空对象最有用之处在于它更靠近数据，因为对象表示的是空间内的实体。
+
+下例为空对象和动态代理相结合的例子：
+
+ ```java
+public interface Operation {
+  String description();
+  void command();
+} ///:~
+ ```
+
+```java
+public interface Robot {
+  String name();
+  String model();
+  List<Operation> operations();
+  class Test {
+    public static void test(Robot r) {
+      if(r instanceof Null)
+        System.out.println("[Null Robot]");
+      System.out.println("Robot name: " + r.name());
+      System.out.println("Robot model: " + r.model());
+      for(Operation operation : r.operations()) {
+        System.out.println(operation.description());
+        operation.command();
+      }
+    }
+  }
+} ///:~
+```
+
+```java
+public class SnowRemovalRobot implements Robot {
+  private String name;
+  public SnowRemovalRobot(String name) {this.name = name;}
+  public String name() { return name; }
+  public String model() { return "SnowBot Series 11"; }
+  public List<Operation> operations() {
+    return Arrays.asList(
+      new Operation() {
+        public String description() {
+          return name + " can shovel snow";
+        }
+        public void command() {
+          System.out.println(name + " shoveling snow");
+        }
+      },	
+      new Operation() {
+        public String description() {
+          return name + " can chip ice";
+        }
+        public void command() {
+          System.out.println(name + " chipping ice");
+        }
+      },
+      new Operation() {
+        public String description() {
+          return name + " can clear the roof";
+        }
+        public void command() {
+          System.out.println(name + " clearing roof");
+        }
+      }
+    );
+  }	
+  public static void main(String[] args) {
+    Robot.Test.test(new SnowRemovalRobot("Slusher"));
+  }
+} /* Output:
+Robot name: Slusher
+Robot model: SnowBot Series 11
+Slusher can shovel snow
+Slusher shoveling snow
+Slusher can chip ice
+Slusher chipping ice
+Slusher can clear the roof
+Slusher clearing roof
+*///:~
+```
+
+```java
+// Using a dynamic proxy to create a Null Object.
+class NullRobotProxyHandler implements InvocationHandler {
+  private String nullName;
+  private Robot proxied = new NRobot();
+  NullRobotProxyHandler(Class<? extends Robot> type) {
+    nullName = type.getSimpleName() + " NullRobot";
+  }
+  private class NRobot implements Null, Robot {
+    public String name() { return nullName; }
+    public String model() { return nullName; }
+    public List<Operation> operations() {
+      return Collections.emptyList();
+    }
+  }	
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    return method.invoke(proxied, args);
+  }
+}
+
+public class NullRobot {
+  public static Robot newNullRobot(Class<? extends Robot> type) {
+    return (Robot)Proxy.newProxyInstance(NullRobot.class.getClassLoader(), new Class[]{ Null.class, Robot.class },
+     new NullRobotProxyHandler(type));
+  }	
+  public static void main(String[] args) {
+    Robot[] bots = {
+      new SnowRemovalRobot("SnowBee"),
+      newNullRobot(SnowRemovalRobot.class)
+    };
+    for(Robot bot : bots)
+      Robot.Test.test(bot);
+  }
+} /* Output:
+Robot name: SnowBee
+Robot model: SnowBot Series 11
+SnowBee can shovel snow
+SnowBee shoveling snow
+SnowBee can chip ice
+SnowBee chipping ice
+SnowBee can clear the roof
+SnowBee clearing roof
+[Null Robot]
+Robot name: SnowRemovalRobot NullRobot
+Robot model: SnowRemovalRobot NullRobot
+*///:~
+```
+
+### YAGNI
+
+极限编程（XP）的原则之一，YAGNI（You Aren’t Going to Need It，你永不需要它），即“做可以工作的最简单的事情”。
+
+###  模拟对象与桩（Mock Objects & Stubs）
+
+空对象的逻辑变体是*模拟对象*和*桩*。空对象的逻辑变体是模拟对象和桩。与空对象一样，它们都表示在最终的程序中所使用的“实际”对象。但是，模拟对象和桩都只是假扮可以传实际信息的存活对象，而不是像空对象那样可以成为null的一种更加智能化的替代物。
+
+模拟对象和桩之间的差异在于程度不同。模拟对象往往是轻量级和自测试的，通常很多模拟对象被创建出来是为了处理各种不同的测试情况。桩只是返回桩数据，它通常是重量级的，并且经常在测试之间被复用。桩可以根据它们被调用的方式，通过配置进行修改，因此桩是一种复杂对象，它要做很多事。然而对于模拟对象，如果你需要做很多事情，通常会创建大量小而简单的模拟对象。
+
+## 接口与类型信息
+
+- 通过使用反射，仍旧可以到达并调用所有方法，甚至是private方法。因此，任何人都可以获取你最私有的方法的名字和签名，然后调用它们。
+- 即使将接口实现为一个私有内部类或匿名类，通过使用反射，依旧可以到达并调用所有方法。因此，没有任何方式可以阻止反射到达并调用那些非公共访问权限的方法。对于域来说，的确如此，即便是private域。
+- final域实际上在遭遇使用反射修改时是安全的。运行时系统会在不抛异常的情况下接受任何修改尝试，但是实际上不会发生任何修改。
