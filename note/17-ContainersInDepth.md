@@ -198,3 +198,23 @@ public class Synchronization {
 }
 ```
 
+##  快速报错（fail-fast）
+
+Java容器有一种保护机制，能够防止多个进行同时修改同一个容器的内容。Java容器类类库采用快速报错（fail-fast）机制。它会探查容器上的任何除了你的进程所进行的操作以外的所有变化，一旦它发现其他进程修改了容器，就会立刻抛出`ConcurrentModificationException`异常。这就是“快速报错”的意思——即，不是使用复杂的算法在事后来检查问题。
+
+```java
+public class FailFast {
+    public static void main(String[] args){
+        Collection<String> c = new ArrayList<>();
+        Iterator<String> it = c.iterator();
+        c.add("An Object");
+        try{
+            String s = it.next();
+        }catch(ConcurrentModificationException e){
+            System.out.println(e);
+        }
+    }
+}
+```
+
+上述程序报`ConcurrentModificationException`异常，因为在容器取得迭代器之后，又有东西被放入到了该容器中。当程序的不同部分修改同一个容器时，就可能导致容器的状态不一致，所以，此异常提醒你，应该修改代码。
